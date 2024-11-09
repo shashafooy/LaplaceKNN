@@ -71,6 +71,17 @@ class Gaussian(_distribution):
         return 0.5 * np.log(lin.det(self.sigma)) + self.x_dim / 2 * (1 + np.log(2 * np.pi))
 
 
+class Limited_Gaussian(Gaussian):
+    def __init__(self, mu, sigma2, limit, N=1):
+        super().__init__(mu, sigma2, N)
+        self.limit = limit
+
+    def sim(self, n_samples=1000):
+        samples = super().sim(n_samples)
+        mask = np.linalg.norm(samples, axis=1) <= self.limit
+        return samples[mask, :]
+
+
 class Exponential(_distribution):
     """Class to simulate an exponential distribution
     https://en.wikipedia.org/wiki/Exponential_distribution
