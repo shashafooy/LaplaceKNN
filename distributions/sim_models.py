@@ -39,7 +39,7 @@ class _distribution:
 
 class Uniform(_distribution):
     def __init__(self, low, high, N=1):
-        super.__init__(x_dim=N)
+        super().__init__(x_dim=N)
         self.low = low
         self.high = high
 
