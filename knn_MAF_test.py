@@ -9,20 +9,22 @@ import argparse
 
 today = date.today().strftime("%b_%d")
 
+N_dims = 3
+
 # Get input type
 parser = argparse.ArgumentParser()
 parser.add_argument("dist_type", help="Distribution: {uniform,gaussian,limited_gaussian}")
 args = parser.parse_args()
 if args.dist_type == "uniform":
-    sim_model = models.Uniform(0, 1, 3)
+    sim_model = models.Uniform(0, 1, N_dims)
     path = "saved_data/uniform"
     filename = "uniform_data({})".format(today)
 elif args.dist_type == "gaussian":
-    sim_model = models.Gaussian(0, 1, 3)
+    sim_model = models.Gaussian(0, 1, N_dims)
     path = "saved_data/gaussian"
     filename = "gaussian_data({})".format(today)
 elif args.dist_type == "limited_gaussian":
-    sim_model = models.Limited_Gaussian(0, 1, 3, 3)
+    sim_model = models.Limited_Gaussian(0, 1, 3, N_dims)
     path = "saved_data/limited_gaussian"
     filename = "limited_gaussian_data({})".format(today)
 else:
@@ -46,7 +48,8 @@ for i in range(n_iterations):
         samples = sim_model.sim(n_samples)
 
         H_Laplace[i, n, :] = est.knn.knn_laplace(samples, k=k_range)
-        H_MAF[i, n] = est.maf.MAF_entropy(samples)
+        H_MAF[i, n], model = est.maf.MAF_entropy(samples)
+        H_KNN_MAF, model = est.maf.MAF_KNN_entropy(samples, model)
 
         filename = util.io.update_filename(path, filename, i)
         util.io.save(

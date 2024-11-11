@@ -1,10 +1,12 @@
 from datetime import timedelta
 import time
 import numpy as np
+from scipy import stats
 from ml.models import mafs
 import ml.step_strategies as ss
 import ml.loss_functions as lf
 from ml import trainers
+import estimators.knn as knn
 
 dtype = np.float32
 rng = np.random
@@ -17,7 +19,21 @@ def MAF_entropy(samples, model=None):
     model = learn_model(samples=samples, NN_model=model, regularizer=regularizer)
 
     H = model.eval_trnloss(samples)
-    return H
+    return H, model
+
+
+def MAF_KNN_entropy(samples, model=None):
+    if model is None:
+        _, model = MAF_entropy(samples, model)
+
+    u = model.calc_random_numbers(samples)  # gaussian estimate
+    uniform = stats.norm.cdf(u)
+    correction = -np.mean(np.log(np.prod(stats.norm.pdf(u), axis=1))) - np.mean(
+        model.logdet_jacobi_u(samples)
+    )
+    H = knn.knn_laplace(uniform)
+
+    return H + correction, model
 
 
 def create_MAF_model(n_inputs, n_hiddens=[200, 200], n_mades=10):

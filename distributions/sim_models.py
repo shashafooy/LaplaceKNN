@@ -56,8 +56,8 @@ class Gaussian(_distribution):
     def __init__(self, mu, sigma2, N=1):
         super().__init__(x_dim=N)
         # make mu,sigma vectors if input is a scalar
-        if N > 1 and np.isscalar(mu):
-            mu = np.full((N,), mu)
+        if np.isscalar(mu):
+            mu = [mu] * N
             sigma2 = sigma2 * np.eye(N)
         self.mu = np.asarray(mu, dtype=dtype)
         self.sigma = np.asarray(sigma2, dtype=dtype)
@@ -80,6 +80,13 @@ class Limited_Gaussian(Gaussian):
         samples = super().sim(n_samples)
         mask = np.linalg.norm(samples, axis=1) <= self.limit
         return samples[mask, :]
+
+    def entropy(self):
+        # Found through MAF uniformization. Does not scale linearly with dimensions
+        if self.x_dim == 3 and self.sigma[0, 0] == 1 and self.mu[0] == 0:
+            return 4.106
+        else:
+            return None
 
 
 class Exponential(_distribution):
