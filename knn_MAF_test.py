@@ -46,7 +46,7 @@ for i in range(n_iterations):
         samples = sim_model.sim(n_samples)
 
         H_Laplace[i, n, :] = est.knn.knn_laplace(samples, k=k_range)
-        # H_MAF[i, n] = est.maf.MAF_entropy(samples)
+        H_MAF[i, n] = est.maf.MAF_entropy(samples)
 
         filename = util.io.update_filename(path, filename, i)
         util.io.save(
