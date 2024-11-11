@@ -129,7 +129,7 @@ def remove_outlier(data, num_std=3):
 
 
 def clean_data(data):
-    """Remove any invalid points in the data such as NaN
+    """Remove any invalid points in the data and replace with NaN
 
     Args:
         data (_type_): data array

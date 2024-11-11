@@ -42,15 +42,18 @@ def knn_KL(data, k=1, n=None, bias_correction=True):
 def knn_laplace(data, k=1, n=None):
     p_norm = 2
     N, dim = data.shape
-
+    k_list = k if isinstance(k, list) else [k]
     if n is None:
         n = N
 
-    (dist, _) = neighbor_distances(data, k, n)
-    r = dist[:, k]
-    phi = np.log(n) + log_lebesque_ball(dim, r, p_norm=p_norm) - spl.digamma(k)
+    (dist, _) = neighbor_distances(data, max(k_list), n)
+    H = np.empty(len(k_list))
+    for i, k in enumerate(k_list):
+        r = dist[:, k]
 
-    H = np.mean(phi)
+        phi = np.log(n) + log_lebesque_ball(dim, r, p_norm=p_norm) - spl.digamma(k)
+
+        H[i] = np.mean(phi)
 
     return H
 

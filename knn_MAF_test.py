@@ -33,9 +33,10 @@ filename = util.io.update_filename(path=path, old_name=filename, rename=False)
 # set up number of sims to run
 n_samp_range = (10 ** np.linspace(2, 4.5, num=9)).astype(np.int32)
 n_iterations = 100
+k_range = [1, 2, 5, 10]
 
 H_MAF = np.empty((n_iterations, len(n_samp_range))) * np.nan
-H_Laplace = np.empty((n_iterations, len(n_samp_range))) * np.nan
+H_Laplace = np.empty((n_iterations, len(n_samp_range), len(k_range))) * np.nan
 
 H_true = sim_model.entropy()
 
@@ -44,8 +45,10 @@ for i in range(n_iterations):
         util.misc.print_border(f"Gaussian, n_samples={n_samples}, iter={i}")
         samples = sim_model.sim(n_samples)
 
-        H_Laplace[i, n] = est.knn.knn_laplace(samples)
-        H_MAF[i, n] = est.maf.MAF_entropy(samples)
+        H_Laplace[i, n, :] = est.knn.knn_laplace(samples, k=k_range)
+        # H_MAF[i, n] = est.maf.MAF_entropy(samples)
 
         filename = util.io.update_filename(path, filename, i)
-        util.io.save((n_samp_range, H_Laplace, H_MAF, H_true), os.path.join(path, filename))
+        util.io.save(
+            (n_samp_range, k_range, H_Laplace, H_MAF, H_true), os.path.join(path, filename)
+        )
