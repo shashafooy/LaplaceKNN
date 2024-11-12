@@ -18,18 +18,17 @@ parser.add_argument("dist_type", help="Distribution: {uniform,gaussian,limited_g
 args = parser.parse_args()
 if args.dist_type == "uniform":
     sim_model = models.Uniform(0, 1, N_dims)
-    path = "saved_data/uniform"
-    filename = "uniform_data({})".format(today)
 elif args.dist_type == "gaussian":
     sim_model = models.Gaussian(0, 1, N_dims)
-    path = "saved_data/gaussian"
-    filename = "gaussian_data({})".format(today)
 elif args.dist_type == "limited_gaussian":
     sim_model = models.Limited_Gaussian(0, 1, 3, N_dims)
-    path = "saved_data/limited_gaussian"
-    filename = "limited_gaussian_data({})".format(today)
+elif args.dist_type == "laplace":
+    sim_model = models.Laplace(0, 1, N_dims)
 else:
     raise ValueError("Invalid distribution type")
+
+path = os.path.join(path, args.dist_type)
+filename = f"{args.dist_type}_data({today})"
 
 filename = util.io.update_filename(path=path, old_name=filename, rename=False)
 
