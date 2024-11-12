@@ -14,10 +14,10 @@ rng = np.random
 
 def MAF_entropy(samples, model=None):
     N, dim = samples.shape
-    model = create_MAF_model(dim)
-    regularizer = lf.WeightDecay(model.parms, 1e-6)
-    model = learn_model(samples=samples, NN_model=model, regularizer=regularizer)
-
+    if model is None:
+        model = create_MAF_model(dim)
+        regularizer = lf.WeightDecay(model.parms, 1e-6)
+        model = learn_model(samples=samples, NN_model=model, regularizer=regularizer)
     H = model.eval_trnloss(samples)
     return H, model
 
@@ -27,11 +27,22 @@ def MAF_KNN_entropy(samples, model=None):
         _, model = MAF_entropy(samples, model)
 
     u = model.calc_random_numbers(samples)  # gaussian estimate
+
+    correction = -np.mean(model.logdet_jacobi_u(samples))
+    H = knn.knn_laplace(u)
+
+    return H + correction, model
+
+
+def uniformized_entropy(samples, model=None):
+    if model is None:
+        _, model = MAF_entropy(samples)
+    u = model.calc_random_numbers(samples)  # gaussian estimate
     uniform = stats.norm.cdf(u)
     correction = -np.mean(np.log(np.prod(stats.norm.pdf(u), axis=1))) - np.mean(
         model.logdet_jacobi_u(samples)
     )
-    H = knn.knn_laplace(uniform)
+    H = knn.tkl(uniform)
 
     return H + correction, model
 

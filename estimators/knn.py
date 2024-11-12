@@ -39,14 +39,13 @@ def knn_KL(data, k=1, n=None, bias_correction=True):
     return H
 
 
-def knn_laplace(data, k=1, n=None):
-    p_norm = 2
+def knn_laplace(data, k=1, n=None, p_norm=2):
     N, dim = data.shape
     k_list = k if isinstance(k, list) else [k]
     if n is None:
         n = N
 
-    (dist, _) = neighbor_distances(data, max(k_list), n)
+    (dist, _) = neighbor_distances(data, max(k_list), n, p_norm=p_norm)
     H = np.empty(len(k_list))
     for i, k in enumerate(k_list):
         r = dist[:, k]
@@ -56,6 +55,40 @@ def knn_laplace(data, k=1, n=None):
         H[i] = np.mean(phi)
 
     return H
+
+
+def tkl(y, k=1):
+    """Evaluate truncated knn KL and KSG algorithms
+    Ziqiao Ao and Jinglai Li. “Entropy estimation via uniformization”
+
+    Args:
+        y (_type_): data points to find the knn distances of
+        n (_type_, optional): number of samples. Defaults to None.
+        k (int, optional): number of neighbors to find. Defaults to 1.
+        shuffle (bool, optional): True to shuffle the data samples. Defaults to True.
+        rng (_type_, optional): type of rng generator. Defaults to np.random.
+
+    Returns:
+        _type_: entropy estimate
+    """
+    N, dim = y.shape
+
+    dist, idx = neighbor_distances(y, k, p_norm=np.inf)
+
+    zeros_mask = dist[:, k] != 0
+
+    r = dist[:, k]
+    r = np.tile(r[:, np.newaxis], (1, dim))
+    lb = (y - r >= 0) * (y - r) + (y - r < 0) * 0
+    ub = (y + r <= 1) * (y + r) + (y + r > 1) * 1
+
+    zeta = (ub - lb)[zeros_mask]  # remove zeros, duplicate points result in 0 distance
+    N = zeta.shape[0]
+    hh = np.log(np.prod(zeta, axis=1))
+
+    h = -spl.digamma(k) + spl.digamma(N) + np.mean(hh)
+
+    return h
 
 
 def lebesque_ball(dim, r, p_norm=2):

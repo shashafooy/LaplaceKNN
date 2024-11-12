@@ -10,6 +10,7 @@ import argparse
 today = date.today().strftime("%b_%d")
 
 N_dims = 3
+path = f"saved_data/{N_dims}d"
 
 # Get input type
 parser = argparse.ArgumentParser()
@@ -37,21 +38,29 @@ n_samp_range = (10 ** np.linspace(2, 4.5, num=9)).astype(np.int32)
 n_iterations = 100
 k_range = [1, 2, 5, 10]
 
-H_MAF = np.empty((n_iterations, len(n_samp_range))) * np.nan
+
 H_Laplace = np.empty((n_iterations, len(n_samp_range), len(k_range))) * np.nan
+H_MAF = np.empty((n_iterations, len(n_samp_range))) * np.nan
+H_KNN_MAF = np.empty((n_iterations, len(n_samp_range))) * np.nan
+H_uniformized = np.empty((n_iterations, len(n_samp_range))) * np.nan
+
 
 H_true = sim_model.entropy()
+
 
 for i in range(n_iterations):
     for n, n_samples in enumerate(n_samp_range):
         util.misc.print_border(f"Gaussian, n_samples={n_samples}, iter={i}")
         samples = sim_model.sim(n_samples)
+        model = None
 
         H_Laplace[i, n, :] = est.knn.knn_laplace(samples, k=k_range)
-        H_MAF[i, n], model = est.maf.MAF_entropy(samples)
-        H_KNN_MAF, model = est.maf.MAF_KNN_entropy(samples, model)
+        H_MAF[i, n], model = est.maf.MAF_entropy(samples, model)
+        H_KNN_MAF[i, n], model = est.maf.MAF_KNN_entropy(samples, model)
+        H_uniformized[i, n], model = est.maf.uniformized_entropy(samples, model)
 
         filename = util.io.update_filename(path, filename, i)
         util.io.save(
-            (n_samp_range, k_range, H_Laplace, H_MAF, H_true), os.path.join(path, filename)
+            (n_samp_range, k_range, H_Laplace, H_MAF, H_KNN_MAF, H_uniformized, H_true),
+            os.path.join(path, filename),
         )
