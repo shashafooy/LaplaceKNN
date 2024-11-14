@@ -9,7 +9,7 @@ import argparse
 
 today = date.today().strftime("%b_%d")
 
-N_dims = 3
+N_dims = 10
 path = f"saved_data/{N_dims}d"
 
 # Get input type
@@ -23,7 +23,7 @@ elif args.dist_type == "gaussian":
 elif args.dist_type == "limited_gaussian":
     sim_model = models.Limited_Gaussian(0, 1, 3, N_dims)
 elif args.dist_type == "laplace":
-    sim_model = models.Laplace(0, 1, N_dims)
+    sim_model = models.Laplace(0, 2, N_dims)
 else:
     raise ValueError("Invalid distribution type")
 
