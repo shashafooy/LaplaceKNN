@@ -9,7 +9,7 @@ import argparse
 
 today = date.today().strftime("%b_%d")
 
-N_dims = 3
+N_dims = 10
 path = f"saved_data/{N_dims}d"
 
 # Get input type
