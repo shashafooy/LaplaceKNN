@@ -36,6 +36,10 @@ class _distribution:
         """log(pdf) of the distribution. Useful for entropy calculations"""
         return 0
 
+    def set_dim(self, dim):
+        self.x_dim = dim
+        return
+
 
 class Uniform(_distribution):
     def __init__(self, low, high, N=1):
@@ -70,6 +74,12 @@ class Gaussian(_distribution):
     def entropy(self):
         return 0.5 * np.log(lin.det(self.sigma)) + self.x_dim / 2 * (1 + np.log(2 * np.pi))
 
+    def set_dim(self, dim):
+        super().set_dim(dim)
+        if len(self.mu) != dim:
+            self.mu = np.asarray([self.mu[0]] * dim, dtype=dtype)
+            self.sigma = np.asarray(self.sigma[0, 0] * np.eye(dim), dtype=dtype)
+
 
 class Limited_Gaussian(Gaussian):
     def __init__(self, mu, sigma2, limit, N=1):
@@ -85,6 +95,8 @@ class Limited_Gaussian(Gaussian):
         # Found through MAF uniformization. Does not scale linearly with dimensions
         if self.x_dim == 3 and self.sigma[0, 0] == 1 and self.mu[0] == 0:
             return 4.106
+        elif self.x_dim == 10 and self.sigma[0, 0] == 1 and self.mu[0] == 0:
+            return 11.619
         else:
             return None
 
